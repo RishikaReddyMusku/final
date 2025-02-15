@@ -4,21 +4,32 @@ import axios from "axios";
 function App() {
     const [tasks, setTasks] = useState([]);
     const [text, setText] = useState("");
+    const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000/tasks";
+
 
     useEffect(() => {
-        axios.get("http://localhost:5000/tasks").then(res => setTasks(res.data));
-    }, []);
+        if (API_URL) {
+            axios.get(API_URL)
+                .then(res => setTasks(res.data))
+                .catch(err => console.error("Error fetching tasks:", err));
+        }
+    }, [API_URL]); // Add API_URL as a dependency
+    
 
     const addTask = () => {
-        axios.post("http://localhost:5000/tasks", { text, completed: false })
-            .then(res => setTasks([...tasks, res.data]));
+        if (!text.trim()) return; // Prevent empty tasks
+        axios.post(API_URL, { text, completed: false })
+            .then(res => setTasks([...tasks, res.data]))
+            .catch(err => console.error("Error adding task:", err));
         setText("");
     };
-
+    
     const deleteTask = (id) => {
-        axios.delete(`http://localhost:5000/tasks/${id}`)
-            .then(() => setTasks(tasks.filter(task => task._id !== id)));
+        axios.delete(`${API_URL}/${id}`)
+            .then(() => setTasks(tasks.filter(task => task._id !== id)))
+            .catch(err => console.error("Error deleting task:", err));
     };
+    
 
     return (
         <div>
